@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Love You Jan</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Noto+Sans+Bengali:wght@700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; font-family: 'Pacifico', cursive; }
+
+  #loader {
+    position: fixed; inset: 0; background: #000;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; gap: 18px; z-index: 999; transition: opacity 0.8s ease;
+  }
+  .ld-title {
+    font-family: 'Pacifico', cursive; font-size: clamp(20px, 5vw, 32px);
+    color: #ff4d6d; letter-spacing: 2px; animation: ldPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes ldPulse {
+    0%,100% { opacity:1; text-shadow: 0 0 20px #ff4d6d, 0 0 40px #ff4d6d66; }
+    50%      { opacity:.5; text-shadow: none; }
+  }
+  .ld-heart { font-size: 32px; animation: ldBeat 0.7s ease-in-out infinite; }
+  @keyframes ldBeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+  .ld-bar-wrap { width: min(260px, 65vw); height: 3px; background: #1c1c1c; border-radius: 99px; overflow: hidden; }
+  .ld-bar {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg,#ff4d6d,#ff9f43,#ff4d6d); background-size: 200%;
+    border-radius: 99px; animation: ldFill 2.5s ease forwards, ldShimmer 1s linear infinite;
+  }
+  @keyframes ldFill    { to { width: 100%; } }
+  @keyframes ldShimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+  canvas { position: fixed; inset: 0; z-index: 1; will-change: transform; }
+
+  .corner {
+    position: fixed; font-size: clamp(32px, 7vw, 54px);
+    z-index: 10; opacity: 0; transition: opacity 1s; pointer-events: none;
+  }
+  .corner.tl { top: 12px; left: 12px; animation: cPulse 2s ease-in-out infinite; }
+  .corner.tr { top: 12px; right: 12px; animation: cPulse 2s ease-in-out infinite .5s; }
+  @keyframes cPulse {
+    0%,100% { transform: scale(1); filter: drop-shadow(0 0 10px #ff4d6d); }
+    50%      { transform: scale(1.25); filter: drop-shadow(0 0 22px #ff4d6d); }
+  }
+
+  #finalScene {
+    position: fixed; inset: 0; background: #000;
+    display: none; flex-direction: column; justify-content: center;
+    align-items: center; gap: 24px; z-index: 100;
+    opacity: 0; transition: opacity 1.2s ease; padding: 24px;
+  }
+  .f-hearts {
+    font-size: clamp(28px, 6vw, 46px);
+    animation: fFloat 2.5s ease-in-out infinite; letter-spacing: 8px;
+  }
+  @keyframes fFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  #caption {
+    font-family: 'Noto Sans Bengali', sans-serif; font-size: clamp(14px, 3.5vw, 20px);
+    color: #fff; text-align: center; line-height: 1.9;
+    max-width: min(560px, 88vw); padding: 22px 26px;
+    border: 1px solid #00e5ff55; border-radius: 18px; background: #00e5ff08;
+    text-shadow: 0 0 10px #00e5ff, 0 0 20px #00b3ff;
+    animation: capElec 3s ease-in-out infinite;
+    cursor: pointer; transition: transform 0.3s ease; user-select: none;
+    will-change: opacity;
+  }
+  #caption:hover { transform: scale(1.02); }
+  @keyframes capElec {
+    0%,100% { text-shadow: 0 0 10px #00e5ff, 0 0 20px #00b3ff; border-color: #00e5ff55; }
+    50%      { text-shadow: 0 0 16px #fff, 0 0 28px #00e5ff; border-color: #00e5ffcc; }
+  }
+
+  .hint {
+    font-family: 'Noto Sans Bengali', sans-serif; font-size: clamp(10px, 2.2vw, 13px);
+    color: #ff4d6d77; letter-spacing: 1px; animation: hBlink 2s ease-in-out infinite;
+  }
+  @keyframes hBlink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  .fhrt { position: fixed; pointer-events: none; z-index: 101; animation: fhUp linear forwards; }
+  @keyframes fhUp {
+    0%   { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-85vh) scale(.3); opacity: 0; }
+  }
+
+  .cap-out { animation: capOut .28s ease forwards; }
+  .cap-in  { animation: capIn  .28s ease forwards; }
+  @keyframes capOut { to { opacity:0; transform:translateY(-6px); } }
+  @keyframes capIn  { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  #nameTag {
+    position: fixed; bottom: 14px; right: 14px;
+    font-family: 'Pacifico', cursive; font-size: clamp(10px, 2vw, 13px);
+    color: #ff4d6d55; z-index: 200; letter-spacing: 1px;
+  }
+  #devTag {
+    position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+    z-index: 200; text-align: center; font-family: 'Pacifico', cursive;
+    font-size: 28px; color: #ffffff22; letter-spacing: 1px; white-space: nowrap;
+  }
+  #devTag a {
+    text-decoration: none; font-weight: 900; font-size: 14px;
+    letter-spacing: 2px; text-transform: uppercase;
+    animation: rainColors 3s linear infinite; transition: all 0.3s;
+  }
+  #devTag a:hover {
+    color: #fff; -webkit-text-stroke: 1px #fff;
+    text-shadow: 0 0 8px #fff, 0 0 20px #00e5ff, 0 0 40px #00b3ff, 0 0 80px #0088ffaa;
+  }
+  #devTag span {
+    font-family: 'Noto Sans Bengali', sans-serif; font-size: 11px;
+    color: #ffffff33; letter-spacing: 1px; display: block; margin-bottom: 2px;
+  }
+  @keyframes rainColors {
+    0%     { color: #00e5cc; -webkit-text-stroke: 1px #00e5cc; text-shadow: 0 0 6px #00e5cc, 0 0 14px #00e5cc, 0 0 30px #00e5cc; }
+    14.28% { color: #ff4d6d; -webkit-text-stroke: 1px #ff4d6d; text-shadow: 0 0 6px #ff4d6d, 0 0 14px #ff4d6d, 0 0 30px #ff4d6d; }
+    28.56% { color: #c084fc; -webkit-text-stroke: 1px #c084fc; text-shadow: 0 0 6px #c084fc, 0 0 14px #c084fc, 0 0 30px #c084fc; }
+    42.84% { color: #fbbf24; -webkit-text-stroke: 1px #fbbf24; text-shadow: 0 0 6px #fbbf24, 0 0 14px #fbbf24, 0 0 30px #fbbf24; }
+    57.12% { color: #f472b6; -webkit-text-stroke: 1px #f472b6; text-shadow: 0 0 6px #f472b6, 0 0 14px #f472b6, 0 0 30px #f472b6; }
+    71.4%  { color: #4ade80; -webkit-text-stroke: 1px #4ade80; text-shadow: 0 0 6px #4ade80, 0 0 14px #4ade80, 0 0 30px #4ade80; }
+    85.68% { color: #38bdf8; -webkit-text-stroke: 1px #38bdf8; text-shadow: 0 0 6px #38bdf8, 0 0 14px #38bdf8, 0 0 30px #38bdf8; }
+    100%   { color: #00e5cc; -webkit-text-stroke: 1px #00e5cc; text-shadow: 0 0 6px #00e5cc, 0 0 14px #00e5cc, 0 0 30px #00e5cc; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="ld-title">💖 Love Loading...</div>
+  <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+  <div class="ld-heart">💗</div>
+</div>
+
+<canvas id="c"></canvas>
+<div class="corner tl" id="ctl">💖</div>
+<div class="corner tr" id="ctr">💖</div>
+
+<div id="finalScene">
+  <div class="f-hearts">❤️ 💖 ❤️</div>
+  <div id="caption">ভালোবাসা হলো জীবনের সবচেয়ে বড় উপহার,<br>যা শুধুমাত্র হৃদয়ের গভীর থেকেই আসে।</div>
+  <div class="hint">💬 ক্যাপশন এ ক্লিক করে তোমার জন্য লেখা কথা গুলো দেখবে</div>
+</div>
+
+<div id="nameTag"></div>
+<div id="devTag"><span>🛠 Developer</span><a href="https://www.facebook.com/virtual.abbu.nobita1" target="_blank">NAHIDUL ISLAM NAIM</a></div>
+
+<script>
+const uName = new URLSearchParams(window.location.search).get("name");
+if (uName) document.getElementById("nameTag").textContent = "✦ " + decodeURIComponent(uName) + " ✦";
+
+const caps = [
+  "ভালোবাসা হলো জীবনের সবচেয়ে বড় উপহার,\nযা শুধুমাত্র হৃদয়ের গভীর থেকেই আসে।",
+  "যেদিন থেকে ভালবাসতে ভুলে যাব।\nবুঝবে আমি বেঁচে নেই।\nআমি তোমাকে ভালবাসি, এটাই সত্য, এটাই জীবন।",
+  "তুমি না থাকলে এই পৃথিবীটা\nঅনেকটা রঙহীন মনে হয়।",
+  "তোমার হাসিটুকু দেখার জন্যই\nআমার বেঁচে থাকা সার্থক।",
+  "ভালোবাসা হলো সেই আলো\nযা অন্ধকারেও পথ দেখায়।",
+];
+
+let capIdx = 0;
+const capEl = document.getElementById("caption");
+capEl.addEventListener("click", () => {
+  capEl.classList.add("cap-out");
+  setTimeout(() => {
+    capIdx = (capIdx + 1) % caps.length;
+    capEl.innerHTML = caps[capIdx].replace(/\n/g, "<br>");
+    capEl.classList.remove("cap-out");
+    capEl.classList.add("cap-in");
+    setTimeout(() => capEl.classList.remove("cap-in"), 300);
+  }, 260);
+});
+
+const canvas = document.getElementById("c");
+const ctx    = canvas.getContext("2d");
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); addEventListener("resize", resize);
+
+const COLORS = ["#00e5cc","#ff4d6d","#c084fc","#fbbf24","#f472b6","#4ade80","#38bdf8","#fb923c"];
+const EMOJIS = ["💖","💗","💓","💝","✨","🌸"];
+const toName = new URLSearchParams(window.location.search).get("to") || "Jan";
+const WORDS = [
+  ` আমি তোমাকে ভালোবাসি 😘 ${toName} 💖`,
+  `𝐈 𝐋𝐎𝐕𝐄 𝐘𝐎𝐔 𝐉𝐚𝐧 ${toName} 💗`,
+  `𝐈 𝐋𝐎𝐕𝐄 𝐘𝐎𝐔 𝐉𝐚𝐧 ${toName} ✨`,
+  ` আমি তোমাকে ভালোবাসি 😘 ${toName} 💓`,
+];
+
+function makeDrop() {
+  const isEmoji = Math.random() < 0.18;
+  return {
+    x: Math.random() * innerWidth,
+    y: Math.random() * -innerHeight,
+    speed: 2 + Math.random() * 1.5,
+    text: isEmoji ? EMOJIS[Math.floor(Math.random()*EMOJIS.length)] : WORDS[Math.floor(Math.random()*WORDS.length)],
+    color: COLORS[Math.floor(Math.random()*COLORS.length)],
+    size: 20,
+    alpha: 0.75 + Math.random() * 0.25,
+  };
+}
+
+const drops = Array.from({length: 30}, makeDrop);
+let running = true;
+let glowFrame = 0;
+
+// 🔥 LAG FIX: pre-set font once, minimal shadow, single fill pass
+const FONT = `bold 20px Arial`;
+
+function draw() {
+  if (!running) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  glowFrame++;
+
+  // Set font once outside loop
+  ctx.font = FONT;
+  ctx.lineWidth = 1;
+  ctx.shadowBlur = 10; // 🔥 reduced from 55 to 10
+
+  drops.forEach(d => {
+    ctx.globalAlpha = d.alpha;
+    ctx.fillStyle   = d.color;
+    ctx.shadowColor = d.color;
+    ctx.fillText(d.text, d.x, d.y); // 🔥 single pass only (was 3)
+    d.y += d.speed;
+    if (d.y > canvas.height + 40) {
+      const nd = makeDrop();
+      Object.assign(d, nd, {y: -120});
+    }
+  });
+
+  ctx.shadowBlur  = 0; // 🔥 reset so it doesn't bleed
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(draw);
+}
+
+setTimeout(() => {
+  const ld = document.getElementById("loader");
+  ld.style.opacity = "0";
+  setTimeout(() => { ld.style.display = "none"; startRain(); }, 800);
+}, 3000);
+
+function startRain() {
+  document.getElementById("ctl").style.opacity = "1";
+  document.getElementById("ctr").style.opacity = "1";
+  draw();
+  setTimeout(showFinal, 5000); // ⏰ 5 seconds
+}
+
+function showFinal() {
+  running = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById("ctl").style.opacity = "0";
+  document.getElementById("ctr").style.opacity = "0";
+  const sc = document.getElementById("finalScene");
+  sc.style.display = "flex";
+  requestAnimationFrame(() => { sc.style.opacity = "1"; });
+
+  setInterval(() => {
+    const h = document.createElement("div");
+    h.className = "fhrt";
+    h.textContent = ["❤️","💖","💗","💓","✨"][Math.floor(Math.random()*5)];
+    h.style.left = (5 + Math.random()*55) + "vw";
+    h.style.bottom = "4vh";
+    h.style.fontSize = Math.min(26, Math.max(16, innerWidth * 3 / 100)) + "px";
+    const dur = 3 + Math.random() * 2.5;
+    h.style.animationDuration = dur + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), dur * 1000);
+  }, 600); // 🔥 reduced from 280ms to 600ms
+}
+</script>
+</body>
+</html>
